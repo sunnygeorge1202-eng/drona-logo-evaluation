@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drona — Logo Evaluation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0f11;
+    --bg2: #15171a;
+    --bg3: #1c1f23;
+    --bg4: #23272d;
+    --border: #2a2e35;
+    --border2: #383d46;
+    --text: #e8eaed;
+    --text2: #9aa0ab;
+    --text3: #5e646f;
+    --accent: #c8f064;
+    --accent2: #a8d050;
+    --accent-dim: rgba(200,240,100,0.08);
+    --accent-dim2: rgba(200,240,100,0.15);
+    --red: #ff6b6b;
+    --amber: #ffc44d;
+    --font: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  html, body { height: 100%; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+
+  .screen { display: none; padding: 32px 24px; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  #login-screen { align-items: center; justify-content: center; }
+
+  .login-box { width: 100%; max-width: 400px; background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 40px 36px; }
+
+  .brand-mark { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; }
+  .brand-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .brand-icon svg { width: 20px; height: 20px; }
+  .brand-name { font-size: 16px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
+  .brand-sub { font-size: 11px; color: var(--text3); font-family: var(--mono); letter-spacing: 0.5px; text-transform: uppercase; }
+
+  .login-title { font-size: 22px; font-weight: 600; color: var(--text); letter-spacing: -0.5px; margin-bottom: 6px; }
+  .login-sub { font-size: 13px; color: var(--text2); margin-bottom: 28px; line-height: 1.5; }
+
+  .field-label { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; font-family: var(--mono); }
+  .field-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; color: var(--text); font-family: var(--font); font-size: 14px; outline: none; transition: border-color 0.2s; margin-bottom: 20px; }
+  .field-input:focus { border-color: var(--accent); }
+  .field-input::placeholder { color: var(--text3); }
+
+  .btn-primary { width: 100%; background: var(--accent); color: #0e0f11; border: none; border-radius: var(--radius-sm); padding: 13px; font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; letter-spacing: -0.2px; }
+  .btn-primary:hover { background: var(--accent2); }
+
+  .login-note { margin-top: 20px; padding: 12px 14px; background: var(--accent-dim); border: 1px solid rgba(200,240,100,0.2); border-radius: var(--radius-sm); font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 0 24px 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; flex-shrink: 0; flex-wrap: wrap; gap: 12px; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-brand { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: -0.2px; }
+  .topbar-sep { color: var(--border2); }
+  .topbar-context { font-size: 12px; color: var(--text3); font-family: var(--mono); }
+  .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  .evaluator-badge { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px 5px 8px; font-size: 12px; color: var(--text2); }
+  .evaluator-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
+
+  .btn-ghost { background: none; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 12px; color: var(--text2); font-family: var(--font); font-size: 12px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+
+  .btn-export { background: var(--accent-dim2); border: 1px solid rgba(200,240,100,0.3); border-radius: var(--radius-sm); padding: 6px 14px; color: var(--accent); font-family: var(--font); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+  .btn-export:hover { background: rgba(200,240,100,0.22); }
+  .btn-export:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .score-layout { display: flex; gap: 20px; flex: 1; min-height: 0; }
+
+  .logo-panel { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
+  .logo-display { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; transition: background 0.2s; }
+  .logo-display img { max-width: 80%; max-height: 80%; object-fit: contain; transition: filter 0.2s; }
+  .logo-display.light-bg { background: #f5f5f5; }
+  .logo-display.mono-bg { background: #fff; }
+  .logo-display.mono-bg img { filter: grayscale(1); }
+
+  .bg-toggle { display: flex; gap: 4px; }
+  .bg-btn { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 5px 4px; font-size: 10px; color: var(--text3); font-family: var(--mono); cursor: pointer; text-align: center; transition: all 0.15s; letter-spacing: 0.3px; }
+  .bg-btn.active { background: var(--accent-dim2); border-color: var(--accent); color: var(--accent); }
+
+  .logo-meta { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+  .logo-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; letter-spacing: -0.2px; text-transform: capitalize; }
+  .logo-counter { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+  .logo-progress-bar { height: 3px; background: var(--bg4); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+  .logo-progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s ease; }
+  .criteria-dots { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+  .crit-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bg4); border: 1px solid var(--border); transition: all 0.2s; }
+  .crit-dot.done { background: var(--accent); border-color: var(--accent); }
+  .crit-dot.active { background: transparent; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim2); }
+
+  .score-panel { flex: 1; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .crit-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .crit-num { font-size: 11px; font-family: var(--mono); color: var(--text3); letter-spacing: 0.5px; margin-bottom: 4px; }
+  .crit-name { font-size: 19px; font-weight: 600; color: var(--text); letter-spacing: -0.5px; line-height: 1.2; }
+  .crit-nav { display: flex; gap: 6px; flex-shrink: 0; }
+  .nav-btn { width: 30px; height: 30px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text2); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .nav-btn:hover { border-color: var(--border2); color: var(--text); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .test-box { background: var(--bg2); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: var(--radius); padding: 16px 18px; }
+  .test-label { font-size: 10px; font-family: var(--mono); color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .test-instruction { font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .test-instruction strong { color: var(--text); font-weight: 500; }
+
+  .scale-label { font-size: 11px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
+  .scale-options { display: flex; flex-direction: column; gap: 6px; }
+  .scale-option { display: flex; align-items: flex-start; gap: 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 11px 14px; cursor: pointer; transition: all 0.15s; }
+  .scale-option:hover { border-color: var(--border2); background: var(--bg3); }
+  .scale-option.selected { border-color: var(--accent); background: var(--accent-dim); }
+  .scale-num { font-size: 14px; font-weight: 600; font-family: var(--mono); color: var(--text3); min-width: 18px; line-height: 1.5; transition: color 0.15s; }
+  .scale-option.selected .scale-num { color: var(--accent); }
+  .scale-text { font-size: 13px; color: var(--text2); line-height: 1.5; transition: color 0.15s; }
+  .scale-option.selected .scale-text { color: var(--text); }
+
+  .comment-area { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; color: var(--text); font-family: var(--font); font-size: 13px; width: 100%; resize: none; outline: none; line-height: 1.5; height: 60px; transition: border-color 0.2s; }
+  .comment-area:focus { border-color: var(--border2); }
+  .comment-area::placeholder { color: var(--text3); }
+
+  .action-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 4px; }
+  .btn-next { background: var(--accent); color: #0e0f11; border: none; border-radius: var(--radius-sm); padding: 11px 22px; font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; letter-spacing: -0.2px; }
+  .btn-next:hover { background: var(--accent2); }
+  .btn-skip { background: none; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 16px; color: var(--text3); font-family: var(--font); font-size: 13px; cursor: pointer; transition: all 0.15s; }
+  .btn-skip:hover { color: var(--text2); border-color: var(--border2); }
+  .score-tally { font-size: 12px; font-family: var(--mono); color: var(--text3); }
+
+  .results-tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px; width: fit-content; }
+  .tab-btn { background: none; border: none; border-radius: 4px; padding: 7px 16px; font-family: var(--font); font-size: 12px; color: var(--text3); cursor: pointer; transition: all 0.15s; font-weight: 500; }
+  .tab-btn.active { background: var(--bg4); color: var(--text); }
+
+  .results-table { width: 100%; border-collapse: collapse; overflow-x: auto; }
+  .results-table th { font-size: 10px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); font-weight: 400; white-space: nowrap; }
+  .results-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text2); vertical-align: middle; }
+  .results-table tr:last-child td { border-bottom: none; }
+  .results-table tr:hover td { background: var(--bg2); }
+
+  .logo-thumb { width: 36px; height: 36px; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+  .logo-thumb img { max-width: 28px; max-height: 28px; object-fit: contain; }
+
+  .score-pill { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 24px; border-radius: 4px; font-size: 12px; font-family: var(--mono); font-weight: 500; background: var(--bg3); color: var(--text2); }
+  .score-pill.high { background: var(--accent-dim2); color: var(--accent); }
+  .score-pill.mid { background: rgba(255,196,77,0.1); color: var(--amber); }
+  .score-pill.low { background: rgba(255,107,107,0.1); color: var(--red); }
+
+  .bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .bar-bg { flex: 1; height: 4px; background: var(--bg4); border-radius: 2px; overflow: hidden; min-width: 60px; }
+  .bar-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+  .spread-indicator { font-size: 10px; font-family: var(--mono); color: var(--text3); white-space: nowrap; }
+  .spread-high { color: var(--amber); }
+
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 24px; text-align: center; gap: 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); }
+  .empty-icon { font-size: 32px; opacity: 0.4; }
+  .empty-title { font-size: 15px; font-weight: 600; color: var(--text2); }
+  .empty-sub { font-size: 12px; color: var(--text3); max-width: 280px; line-height: 1.5; }
+
+  .ev-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-bottom: 20px; }
+  .ev-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+  .ev-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .ev-count { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+
+  .status-badge { display: inline-flex; align-items: center; gap: 5px; background: var(--bg3); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; font-size: 11px; color: var(--text3); font-family: var(--mono); }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .status-dot.green { background: var(--accent); }
+
+  .no-logos-msg { background: var(--bg2); border: 1px dashed var(--border2); border-radius: var(--radius); padding: 28px 24px; text-align: center; max-width: 520px; margin: 0 auto; }
+  .no-logos-msg h3 { font-size: 15px; color: var(--text2); margin-bottom: 12px; }
+  .no-logos-msg p { font-size: 12px; color: var(--text3); line-height: 1.9; font-family: var(--mono); text-align: left; }
+  .no-logos-msg code { color: var(--accent); background: var(--accent-dim); padding: 1px 6px; border-radius: 3px; }
+
+  .rank-num { font-size: 12px; font-family: var(--mono); color: var(--text3); min-width: 20px; }
+  .rank-1 { color: var(--accent); font-weight: 600; }
+  .rank-2 { color: var(--text2); }
+  .rank-3 { color: var(--amber); }
+
+  .section-label { font-size: 10px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+
+  .loading-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; z-index: 100; }
+  .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; color: var(--text3); font-family: var(--mono); }
+
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 13px; color: var(--text); z-index: 200; opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; max-width: 320px; line-height: 1.5; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { border-color: rgba(200,240,100,0.4); color: var(--accent); }
+  .toast.error { border-color: rgba(255,107,107,0.4); color: var(--red); }
+
+  .download-banner { background: var(--accent-dim); border: 1px solid rgba(200,240,100,0.25); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .download-banner p { font-size: 13px; color: var(--text2); line-height: 1.5; }
+  .download-banner p strong { color: var(--text); font-weight: 500; }
+  .btn-download { background: var(--accent); color: #0e0f11; border: none; border-radius: var(--radius-sm); padding: 9px 18px; font-family: var(--font); font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px; text-decoration: none; }
+  .btn-download:hover { background: var(--accent2); }
+
+  @media (max-width: 640px) {
+    .score-layout { flex-direction: column; }
+    .logo-panel { width: 100%; flex-direction: row; flex-wrap: wrap; }
+    .logo-display { width: 120px; height: 120px; aspect-ratio: unset; flex-shrink: 0; }
+    .logo-meta { flex: 1; min-width: 160px; }
+    .bg-toggle { width: 120px; flex-shrink: 0; flex-direction: column; }
+    .results-table { display: block; overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">loading logos...</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- LOGIN -->
+<div class="screen" id="login-screen">
+  <div class="login-box">
+    <div class="brand-mark">
+      <div class="brand-icon">
+        <svg viewBox="0 0 20 20" fill="none">
+          <rect x="3" y="3" width="14" height="14" rx="2" stroke="#0e0f11" stroke-width="1.5"/>
+          <path d="M7 10h6M10 7v6" stroke="#0e0f11" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">Drona</div>
+        <div class="brand-sub">Logo Evaluation</div>
+      </div>
+    </div>
+    <div class="login-title">Evaluator login</div>
+    <div class="login-sub">Enter your name to begin. Your scores are saved automatically and aggregated with other evaluators on this device session.</div>
+    <div class="field-label">Your name</div>
+    <input class="field-input" id="evaluator-name" placeholder="e.g. Priya" type="text" maxlength="40" autocomplete="off" />
+    <button class="btn-primary" onclick="handleLogin()">Begin evaluation →</button>
+    <div class="login-note">ℹ️ Score each logo across 7 criteria. Each criterion includes a specific test to run — follow it before selecting your score.</div>
+  </div>
+</div>
+
+<!-- SCORING -->
+<div class="screen" id="score-screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-brand">Drona Logo Evaluation</div>
+      <span class="topbar-sep">·</span>
+      <div class="topbar-context" id="topbar-ctx">—</div>
+    </div>
+    <div class="topbar-right">
+      <div class="evaluator-badge"><div class="evaluator-dot"></div><span id="topbar-evaluator">—</span></div>
+      <button class="btn-ghost" onclick="showResults()">Results board</button>
+    </div>
+  </div>
+
+  <div class="score-layout">
+    <div class="logo-panel">
+      <div class="logo-display" id="logo-display">
+        <img id="logo-img" src="" alt="Logo candidate" />
+      </div>
+      <div class="bg-toggle">
+        <button class="bg-btn active" onclick="setBg('dark',this)">Dark</button>
+        <button class="bg-btn" onclick="setBg('light',this)">Light</button>
+        <button class="bg-btn" onclick="setBg('mono',this)">Mono</button>
+      </div>
+      <div class="logo-meta">
+        <div class="logo-name" id="logo-label">—</div>
+        <div class="logo-counter" id="logo-counter">Logo 0 of 0</div>
+        <div class="logo-progress-bar"><div class="logo-progress-fill" id="logo-progress"></div></div>
+        <div class="criteria-dots" id="crit-dots"></div>
+      </div>
+    </div>
+
+    <div class="score-panel">
+      <div class="crit-header">
+        <div>
+          <div class="crit-num" id="crit-num">Criterion 1 of 7</div>
+          <div class="crit-name" id="crit-name">—</div>
+        </div>
+        <div class="crit-nav">
+          <button class="nav-btn" id="prev-crit-btn" onclick="prevCrit()">‹</button>
+          <button class="nav-btn" id="next-crit-btn" onclick="nextCrit()">›</button>
+        </div>
+      </div>
+      <div class="test-box">
+        <div class="test-label">▸ Run this test</div>
+        <div class="test-instruction" id="test-instruction">—</div>
+      </div>
+      <div>
+        <div class="scale-label">Your rating</div>
+        <div class="scale-options" id="scale-options"></div>
+      </div>
+      <div>
+        <div class="field-label" style="margin-bottom:8px;">Note (optional)</div>
+        <textarea class="comment-area" id="comment-area" placeholder="Any observation about this criterion..."></textarea>
+      </div>
+      <div class="action-row">
+        <button class="btn-skip" onclick="skipLogo()">Skip this logo</button>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="score-tally" id="score-tally">0 / 7 scored</div>
+          <button class="btn-next" id="action-btn" onclick="handleAction()">Next criterion →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="screen" id="results-screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-brand">Drona Logo Evaluation</div>
+      <span class="topbar-sep">·</span>
+      <div class="topbar-context">Results board</div>
+    </div>
+    <div class="topbar-right">
+      <div class="evaluator-badge"><div class="evaluator-dot"></div><span id="results-evaluator">—</span></div>
+      <button class="btn-export" id="export-btn" onclick="exportCSV()">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v7M4 6l2.5 2.5L9 6M2 10h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Export CSV
+      </button>
+      <button class="btn-ghost" onclick="resumeScoring()">Continue scoring</button>
+    </div>
+  </div>
+
+  <div id="download-banner-wrap"></div>
+
+  <div class="results-tabs">
+    <button class="tab-btn active" onclick="switchTab('leaderboard',this)">Leaderboard</button>
+    <button class="tab-btn" onclick="switchTab('breakdown',this)">By criterion</button>
+    <button class="tab-btn" onclick="switchTab('evaluators',this)">Evaluators</button>
+  </div>
+
+  <div id="results-content"></div>
+</div>
+
+<script>
+const GITHUB_RAW = 'https://raw.githubusercontent.com/sunnygeorge1202-eng/drona-logo-evaluation/main/logos/';
+const MANIFEST_URL = GITHUB_RAW + 'logos.json';
+const STORAGE_KEY = 'drona_eval_scores_v1';
+
+const CRITERIA = [
+  { id:'simplicity', name:'Simplicity', short:'Simple',
+    test:`<strong>The 30-second sketch test.</strong> Look at the logo for 10 seconds, then close your eyes and try to sketch it mentally. Could you describe every element clearly enough for someone else to draw it? Count the distinct shapes or components — fewer is better.`,
+    scale:['5+ distinct elements; impossible to recreate from memory','4 elements; some details hard to recall accurately','3 clear elements; reproducible with some effort','2 elements; straightforward to sketch from memory','1–2 elements; anyone could draw it from a brief description'] },
+  { id:'scalability', name:'Scalability', short:'Scales',
+    test:`<strong>The thumbnail test.</strong> Zoom your browser out to 25% (or hold the logo at arm's length). Can you still make out the main shape clearly? Do any lines merge, blur, or disappear? The mark must survive this without losing its identity.`,
+    scale:['Main shape completely unreadable at small size; elements merge','Outline holds but 2+ details are lost or blurred','Core shape survives; one minor detail becomes unclear','Almost fully readable; only the finest lines thin slightly','Perfectly clear at postage stamp size — nothing is lost'] },
+  { id:'distinctiveness', name:'Distinctiveness', short:'Distinct',
+    test:`<strong>The "could it belong to anyone?" test.</strong> Imagine this mark on 5 other companies in the education or assessment space. Would it feel just as natural there? Or does something about it feel specifically tied to what Drona is? Ownable marks pass this test.`,
+    scale:['Completely generic — fits dozens of companies in this space','Slightly distinctive but relies on colour or wordmark to differentiate','Moderately ownable — a few competitors could use it','Clearly distinctive; only 1–2 other companies could plausibly use it','Uniquely ownable — impossible to mistake for another brand'] },
+  { id:'relevance', name:'Relevance', short:'Relevant',
+    test:`<strong>The first impression test.</strong> Without knowing what Drona is, what sector would you place this brand in? It should feel credible for an intelligent assessment platform — not a consumer app, not a children's service, not a hardware product. Does the visual tone match that positioning?`,
+    scale:['Feels wrong — suggests a completely different sector or tone','Neutral at best; could be any software product','Vaguely appropriate; does not undermine the brand','Clearly fits the platform intelligence space; feels credible','Immediately communicates intelligence, precision, and trust'] },
+  { id:'versatility', name:'Versatility', short:'Versatile',
+    test:`<strong>The one-colour test.</strong> Click the Mono button on the left to view the logo in greyscale. Does the mark still hold its form and feel? Now imagine it reversed — white on black. Would it survive both without losing character? A strong mark is not dependent on colour.`,
+    scale:['Completely dependent on colour; breaks in mono','Loses significant character in mono; feels flat or broken','Acceptable in mono; loses some nuance but holds shape','Works well in mono; character mostly preserved','Fully versatile — equally strong in colour, mono, and reversed'] },
+  { id:'originality', name:'Originality', short:'Original',
+    test:`<strong>The cliché check.</strong> Does this mark use any of these visual shortcuts? → Arrows or direction metaphors · Target or bullseye · Brain or neural network · Circuit board patterns · Light bulb · Magnifying glass · Generic letter stacking. If yes, how central is that element to the overall mark?`,
+    scale:['Built entirely around a visual cliché for this space','Primary element is a cliché; minor original touches','Mix of familiar and original; neither dominates','Mostly original with at most one familiar reference point','Genuinely novel — nothing like it exists in this space'] },
+  { id:'longevity', name:'Longevity', short:'Timeless',
+    test:`<strong>The 10-year test.</strong> Does this mark rely on current design trends — heavy gradients, geometry fads, layered transparency effects, hyper-detailed illustration? Imagine it used in a 2015 brand presentation. Would it still look intentional and considered, or would it look like it belongs to a specific era?`,
+    scale:['Heavily trend-dependent — would look dated within 2–3 years','Some trendy elements; may age poorly in 5 years','Mostly neutral; one element might date but the core holds','Timeless approach; no trend-dependent elements visible','Truly enduring — could have been made in any decade, still works'] }
+];
+
+let state = {
+  evaluator: '',
+  logos: [],
+  logoIdx: 0,
+  critIdx: 0,
+  scores: {},
+  allScores: {}
+};
+
+// ── Storage (localStorage for standalone hosting) ──
+function storageGet() {
+  try { const v = localStorage.getItem(STORAGE_KEY); return v ? JSON.parse(v) : {}; } catch(e) { return {}; }
+}
+function storageSet(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+// ── Init ──
+async function init() {
+  state.allScores = storageGet();
+
+  try {
+    document.getElementById('loading-text').textContent = 'fetching logo list...';
+    const res = await fetch(MANIFEST_URL);
+    if (res.ok) {
+      const logos = await res.json();
+      state.logos = logos.map(f => ({ file: f, name: f.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ') }));
+      document.getElementById('loading-text').textContent = `${logos.length} logos loaded`;
+    } else {
+      document.getElementById('loading-text').textContent = 'no logos found — see setup below';
+    }
+  } catch(e) {
+    document.getElementById('loading-text').textContent = 'could not reach github — check connection';
+  }
+
+  setTimeout(() => {
+    document.getElementById('loading').style.display = 'none';
+    showScreen('login-screen');
+  }, 600);
+
+  document.getElementById('evaluator-name').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleLogin();
+  });
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── Login ──
+function handleLogin() {
+  const name = document.getElementById('evaluator-name').value.trim();
+  if (!name) { showToast('Please enter your name to continue.', 'error'); return; }
+  state.evaluator = name;
+  state.scores = state.allScores[name] || {};
+  document.getElementById('topbar-evaluator').textContent = name;
+  document.getElementById('results-evaluator').textContent = name;
+
+  if (state.logos.length === 0) { showNoLogos(); return; }
+
+  // Resume from first incomplete logo
+  let startIdx = 0;
+  for (let i = 0; i < state.logos.length; i++) {
+    const ls = state.scores[state.logos[i].file] || {};
+    if (CRITERIA.filter(c => ls[c.id] !== undefined).length < CRITERIA.length) { startIdx = i; break; }
+    if (i === state.logos.length - 1) startIdx = i;
+  }
+  state.logoIdx = startIdx;
+  state.critIdx = 0;
+  showScreen('score-screen');
+  renderScoring();
+}
+
+function showNoLogos() {
+  showScreen('score-screen');
+  document.getElementById('topbar-ctx').textContent = 'Setup required';
+  document.querySelector('.score-layout').innerHTML = `
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px 0;">
+      <div class="no-logos-msg">
+        <h3>No logos loaded — repository setup needed</h3>
+        <p>
+          Create this structure in your GitHub repo:<br><br>
+          <code>sunnygeorge1202-eng/drona-logo-evaluation</code><br>
+          └── <code>logos/</code><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;├── <code>logos.json</code>&nbsp;&nbsp;← manifest file<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;├── <code>concept-01.svg</code><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;└── <code>concept-02.png</code><br><br>
+          Contents of <code>logos.json</code>:<br>
+          <code>["concept-01.svg", "concept-02.png"]</code><br><br>
+          Add a filename to <code>logos.json</code> each time you add a logo.<br>
+          Then reload this page — logos appear automatically.
+        </p>
+      </div>
+    </div>`;
+}
+
+// ── Scoring ──
+function renderScoring() {
+  if (!state.logos.length) return;
+  const logo = state.logos[state.logoIdx];
+  const crit = CRITERIA[state.critIdx];
+  const ls = state.scores[logo.file] || {};
+  const scored = CRITERIA.filter(c => ls[c.id] !== undefined).length;
+
+  document.getElementById('topbar-ctx').textContent =
+    `Logo ${state.logoIdx + 1} of ${state.logos.length}  ·  ${scored}/7 criteria`;
+
+  const imgEl = document.getElementById('logo-img');
+  imgEl.src = GITHUB_RAW + logo.file;
+  imgEl.onerror = () => { imgEl.alt = 'Image not found'; };
+
+  document.getElementById('logo-label').textContent = logo.name;
+  document.getElementById('logo-counter').textContent = `Logo ${state.logoIdx + 1} of ${state.logos.length}`;
+  document.getElementById('logo-progress').style.width = `${(state.logoIdx / state.logos.length) * 100}%`;
+
+  document.getElementById('crit-dots').innerHTML = CRITERIA.map((c, i) => {
+    const done = ls[c.id] !== undefined;
+    const active = i === state.critIdx;
+    return `<div class="crit-dot ${done ? 'done' : ''} ${active ? 'active' : ''}" title="${c.name}"></div>`;
+  }).join('');
+
+  document.getElementById('crit-num').textContent = `Criterion ${state.critIdx + 1} of 7`;
+  document.getElementById('crit-name').textContent = crit.name;
+  document.getElementById('test-instruction').innerHTML = crit.test;
+
+  const cur = ls[crit.id];
+  document.getElementById('scale-options').innerHTML = crit.scale.map((desc, i) => {
+    const score = i + 1;
+    return `<div class="scale-option ${cur === score ? 'selected' : ''}" onclick="selectScore(${score})">
+      <div class="scale-num">${score}</div>
+      <div class="scale-text">${desc}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('comment-area').value = ls[`${crit.id}_note`] || '';
+  document.getElementById('comment-area').oninput = saveComment;
+  document.getElementById('score-tally').textContent = `${scored} / 7 scored`;
+  document.getElementById('prev-crit-btn').disabled = state.critIdx === 0;
+  document.getElementById('next-crit-btn').disabled = state.critIdx === CRITERIA.length - 1;
+
+  const isLastCrit = state.critIdx === CRITERIA.length - 1;
+  const isLastLogo = state.logoIdx === state.logos.length - 1;
+  const allDone = scored === 7;
+  const btn = document.getElementById('action-btn');
+  if (allDone && isLastLogo) btn.textContent = 'View results →';
+  else if (isLastCrit) btn.textContent = 'Next logo →';
+  else btn.textContent = 'Next criterion →';
+}
+
+function selectScore(score) {
+  const logo = state.logos[state.logoIdx];
+  const crit = CRITERIA[state.critIdx];
+  if (!state.scores[logo.file]) state.scores[logo.file] = {};
+  state.scores[logo.file][crit.id] = score;
+  saveScores();
+  renderScoring();
+}
+
+function saveComment() {
+  const logo = state.logos[state.logoIdx];
+  const crit = CRITERIA[state.critIdx];
+  if (!state.scores[logo.file]) state.scores[logo.file] = {};
+  state.scores[logo.file][`${crit.id}_note`] = document.getElementById('comment-area').value;
+  saveScores();
+}
+
+function saveScores() {
+  state.allScores[state.evaluator] = state.scores;
+  storageSet(state.allScores);
+}
+
+function handleAction() {
+  const logo = state.logos[state.logoIdx];
+  const ls = state.scores[logo.file] || {};
+  const allDone = CRITERIA.filter(c => ls[c.id] !== undefined).length === 7;
+  const isLastCrit = state.critIdx === CRITERIA.length - 1;
+  const isLastLogo = state.logoIdx === state.logos.length - 1;
+  if (allDone && isLastLogo) { showResults(); return; }
+  if (isLastCrit || allDone) nextLogo(); else nextCrit();
+}
+
+function nextCrit() { if (state.critIdx < CRITERIA.length - 1) { state.critIdx++; renderScoring(); } }
+function prevCrit() { if (state.critIdx > 0) { state.critIdx--; renderScoring(); } }
+
+function nextLogo() {
+  if (state.logoIdx < state.logos.length - 1) {
+    state.logoIdx++; state.critIdx = 0; renderScoring();
+    showToast(`Logo ${state.logoIdx + 1} of ${state.logos.length}`);
+  }
+}
+
+function skipLogo() { nextLogo(); }
+
+function setBg(mode, btn) {
+  document.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const d = document.getElementById('logo-display');
+  d.classList.remove('light-bg', 'mono-bg');
+  if (mode === 'light') d.classList.add('light-bg');
+  else if (mode === 'mono') d.classList.add('mono-bg');
+}
+
+// ── Results ──
+function resumeScoring() { showScreen('score-screen'); renderScoring(); }
+function showResults() { showScreen('results-screen'); renderResultsTab('leaderboard'); }
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderResultsTab(tab);
+}
+
+function getAggregated() {
+  return state.logos.map(logo => {
+    const scores = {}, counts = {}, evScores = {};
+    Object.entries(state.allScores).forEach(([ev, evData]) => {
+      const ls = evData[logo.file] || {};
+      evScores[ev] = {};
+      CRITERIA.forEach(c => {
+        if (ls[c.id] !== undefined) {
+          scores[c.id] = (scores[c.id] || 0) + ls[c.id];
+          counts[c.id] = (counts[c.id] || 0) + 1;
+          evScores[ev][c.id] = ls[c.id];
+        }
+      });
+    });
+    const critAvgs = {};
+    let total = 0, rated = 0;
+    CRITERIA.forEach(c => {
+      if (counts[c.id] > 0) { critAvgs[c.id] = scores[c.id] / counts[c.id]; total += critAvgs[c.id]; rated++; }
+    });
+    return { logo, critAvgs, total: rated > 0 ? total : null, evScores };
+  }).sort((a, b) => (b.total || 0) - (a.total || 0));
+}
+
+function scoreClass(s) {
+  if (s === null || s === undefined) return '';
+  if (s >= 4) return 'high'; if (s >= 2.5) return 'mid'; return 'low';
+}
+
+function renderResultsTab(tab) {
+  const el = document.getElementById('results-content');
+  if (tab === 'leaderboard') renderLeaderboard(el);
+  else if (tab === 'breakdown') renderBreakdown(el);
+  else renderEvaluators(el);
+}
+
+function renderLeaderboard(el) {
+  const data = getAggregated();
+  if (!data.some(d => d.total !== null)) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">◎</div><div class="empty-title">No scores yet</div><div class="empty-sub">Complete scoring at least one logo to see results here.</div></div>`;
+    return;
+  }
+  el.innerHTML = `<div style="overflow-x:auto;"><table class="results-table"><thead><tr>
+    <th>#</th><th>Logo</th><th>Avg / crit</th><th style="min-width:120px">Score / 35</th>
+    ${CRITERIA.map(c => `<th title="${c.name}">${c.short}</th>`).join('')}
+    <th title="Score spread across evaluators">Spread</th>
+  </tr></thead><tbody>
+  ${data.map((d, i) => {
+    if (!d.total) return '';
+    const evVals = Object.values(d.evScores).map(ev => CRITERIA.reduce((s, c) => s + (ev[c.id] || 0), 0)).filter(v => v > 0);
+    const spread = evVals.length > 1 ? (Math.max(...evVals) - Math.min(...evVals)).toFixed(1) : '—';
+    const spreadHigh = evVals.length > 1 && (Math.max(...evVals) - Math.min(...evVals)) >= 5;
+    return `<tr>
+      <td><span class="rank-num rank-${i+1}">${i+1}</span></td>
+      <td><div style="display:flex;align-items:center;gap:10px;">
+        <div class="logo-thumb"><img src="${GITHUB_RAW + d.logo.file}" /></div>
+        <span style="color:var(--text);white-space:nowrap;">${d.logo.name}</span>
+      </div></td>
+      <td><span class="score-pill ${scoreClass(d.total / 7)}">${(d.total / 7).toFixed(1)}</span></td>
+      <td><div class="bar-wrap">
+        <div class="bar-bg"><div class="bar-fill" style="width:${(d.total / 35) * 100}%"></div></div>
+        <span style="font-size:11px;font-family:var(--mono);color:var(--text3);min-width:28px;">${d.total.toFixed(1)}</span>
+      </div></td>
+      ${CRITERIA.map(c => { const v = d.critAvgs[c.id]; return `<td><span class="score-pill ${scoreClass(v)}">${v !== undefined ? v.toFixed(1) : '—'}</span></td>`; }).join('')}
+      <td><span class="spread-indicator ${spreadHigh ? 'spread-high' : ''}">${spread}</span></td>
+    </tr>`;
+  }).join('')}
+  </tbody></table></div>`;
+}
+
+function renderBreakdown(el) {
+  const data = getAggregated();
+  if (!data.some(d => d.total !== null)) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">◎</div><div class="empty-title">No scores yet</div></div>`; return;
+  }
+  el.innerHTML = CRITERIA.map(crit => {
+    const rows = data.filter(d => d.critAvgs[crit.id] !== undefined).sort((a, b) => b.critAvgs[crit.id] - a.critAvgs[crit.id]);
+    return `<div style="margin-bottom:28px;">
+      <div class="section-label">${crit.name}</div>
+      <table class="results-table"><tbody>${rows.map((d, i) => `<tr>
+        <td style="width:28px"><span class="rank-num rank-${i+1}">${i+1}</span></td>
+        <td><div style="display:flex;align-items:center;gap:8px;">
+          <div class="logo-thumb"><img src="${GITHUB_RAW + d.logo.file}" /></div>
+          <span style="color:var(--text)">${d.logo.name}</span>
+        </div></td>
+        <td><div class="bar-wrap">
+          <div class="bar-bg"><div class="bar-fill" style="width:${(d.critAvgs[crit.id] / 5) * 100}%"></div></div>
+          <span class="score-pill ${scoreClass(d.critAvgs[crit.id])}">${d.critAvgs[crit.id].toFixed(1)}</span>
+        </div></td>
+      </tr>`).join('')}</tbody></table>
+    </div>`;
+  }).join('');
+}
+
+function renderEvaluators(el) {
+  const evaluators = Object.keys(state.allScores);
+  if (!evaluators.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">◎</div><div class="empty-title">No evaluators yet</div></div>`; return;
+  }
+  el.innerHTML = `<div class="ev-grid">${evaluators.map(ev => {
+    const evData = state.allScores[ev] || {};
+    const logosScored = Object.keys(evData).filter(k => !k.endsWith('_note') && CRITERIA.some(c => evData[k] && evData[k][c.id] !== undefined)).length;
+    const totalCrits = Object.entries(evData).filter(([k]) => !k.endsWith('_note')).reduce((s, [, ls]) => s + CRITERIA.filter(c => ls[c.id] !== undefined).length, 0);
+    const pct = state.logos.length > 0 ? Math.round((logosScored / state.logos.length) * 100) : 0;
+    const isCurrent = ev === state.evaluator;
+    return `<div class="ev-card" style="${isCurrent ? 'border-color:var(--accent);' : ''}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div class="ev-name">${ev}</div>
+        ${isCurrent ? '<span class="status-badge"><span class="status-dot green"></span>you</span>' : ''}
+      </div>
+      <div class="ev-count">${logosScored} / ${state.logos.length} logos · ${totalCrits} criteria rated</div>
+      <div class="logo-progress-bar" style="margin-top:10px;">
+        <div class="logo-progress-fill" style="width:${pct}%"></div>
+      </div>
+    </div>`;
+  }).join('')}</div>
+  <div style="font-size:12px;color:var(--text3);font-family:var(--mono);">
+    ${evaluators.length} evaluator${evaluators.length !== 1 ? 's' : ''} · ${state.logos.length} logo${state.logos.length !== 1 ? 's' : ''} in pool · ${CRITERIA.length} criteria per logo
+  </div>`;
+}
+
+// ── Export CSV ──
+function buildCSV() {
+  const headers = ['Evaluator', 'Logo',
+    ...CRITERIA.map(c => c.name),
+    'Total',
+    ...CRITERIA.map(c => c.name + '_note')
+  ];
+  const rows = [headers.join(',')];
+
+  Object.entries(state.allScores).forEach(([ev, evData]) => {
+    state.logos.forEach(logo => {
+      const ls = evData[logo.file] || {};
+      const hasAny = CRITERIA.some(c => ls[c.id] !== undefined);
+      if (!hasAny) return;
+      const scores = CRITERIA.map(c => ls[c.id] !== undefined ? ls[c.id] : '');
+      const total = scores.filter(s => s !== '').reduce((a, b) => a + b, 0);
+      const notes = CRITERIA.map(c => `"${(ls[`${c.id}_note`] || '').replace(/"/g, '""')}"`);
+      rows.push([`"${ev}"`, `"${logo.name}"`, ...scores, total, ...notes].join(','));
+    });
+  });
+
+  return rows.join('\n');
+}
+
+function exportCSV() {
+  const csv = buildCSV();
+  const lineCount = csv.split('\n').length - 1;
+  if (lineCount === 0) { showToast('No scores to export yet.', 'error'); return; }
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const filename = `drona-logo-evaluation-${new Date().toISOString().slice(0,10)}.csv`;
+
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+
+  // Show banner with instructions
+  document.getElementById('download-banner-wrap').innerHTML = `
+    <div class="download-banner">
+      <p><strong>${filename}</strong> downloaded. To save to Google Drive: open <a href="https://drive.google.com" target="_blank" style="color:var(--accent)">drive.google.com</a>, click New → File upload, and select the downloaded file.</p>
+      <button class="btn-ghost" onclick="document.getElementById('download-banner-wrap').innerHTML=''">Dismiss</button>
+    </div>`;
+
+  showToast(`${lineCount} row${lineCount !== 1 ? 's' : ''} exported`, 'success');
+}
+
+// ── Toast ──
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+
+window.addEventListener('load', init);
+</script>
+</body>
+</html>
