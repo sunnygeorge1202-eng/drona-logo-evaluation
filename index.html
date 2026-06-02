@@ -81,10 +81,11 @@
 
   .logo-panel { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
   .logo-display { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; transition: background 0.2s; }
-  .logo-display img { max-width: 80%; max-height: 80%; object-fit: contain; transition: filter 0.2s; }
+  .logo-display img { max-width: 80%; max-height: 80%; object-fit: contain; transition: filter 0.2s; filter: brightness(0) invert(1); }
   .logo-display.light-bg { background: #f5f5f5; }
+  .logo-display.light-bg img { filter: none; }
   .logo-display.mono-bg { background: #fff; }
-  .logo-display.mono-bg img { filter: grayscale(1); }
+  .logo-display.mono-bg img { filter: grayscale(1) brightness(0); }
 
   .bg-toggle { display: flex; gap: 4px; }
   .bg-btn { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 5px 4px; font-size: 10px; color: var(--text3); font-family: var(--mono); cursor: pointer; text-align: center; transition: all 0.15s; letter-spacing: 0.3px; }
