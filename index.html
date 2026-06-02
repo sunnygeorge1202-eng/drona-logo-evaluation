@@ -86,6 +86,10 @@
   .logo-display.light-bg img { filter: none; }
   .logo-display.mono-bg { background: #fff; }
   .logo-display.mono-bg img { filter: grayscale(1) brightness(0); }
+  #logo-img-wrap svg { width: 100%; height: 100%; transition: filter 0.2s; }
+  .logo-display #logo-img-wrap svg { filter: brightness(0) invert(1); }
+  .logo-display.light-bg #logo-img-wrap svg { filter: none; }
+  .logo-display.mono-bg #logo-img-wrap svg { filter: grayscale(1) brightness(0); }
 
   .bg-toggle { display: flex; gap: 4px; }
   .bg-btn { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 5px 4px; font-size: 10px; color: var(--text3); font-family: var(--mono); cursor: pointer; text-align: center; transition: all 0.15s; letter-spacing: 0.3px; }
@@ -262,7 +266,7 @@
   <div class="score-layout">
     <div class="logo-panel">
       <div class="logo-display" id="logo-display">
-        <img id="logo-img" src="" alt="Logo candidate" />
+        <div id="logo-img-wrap" style="width:80%;height:80%;display:flex;align-items:center;justify-content:center;"></div>
       </div>
       <div class="bg-toggle">
         <button class="bg-btn active" onclick="setBg('dark',this)">Dark</button>
@@ -477,9 +481,32 @@ function renderScoring() {
   document.getElementById('topbar-ctx').textContent =
     `Logo ${state.logoIdx + 1} of ${state.logos.length}  ·  ${scored}/7 criteria`;
 
-  const imgEl = document.getElementById('logo-img');
-  imgEl.src = GITHUB_RAW + logo.file;
-  imgEl.onerror = () => { imgEl.alt = 'Image not found'; };
+  const wrap = document.getElementById('logo-img-wrap');
+  wrap.innerHTML = '<div style="font-size:11px;color:var(--text3);font-family:var(--mono);">loading...</div>';
+
+  // Fetch SVG and inject inline so CSS filters work reliably
+  const fileExt = logo.file.split('.').pop().toLowerCase();
+  if (fileExt === 'svg') {
+    fetch(GITHUB_RAW + logo.file)
+      .then(r => r.text())
+      .then(svgText => {
+        // Strip XML declaration and clean up for inline use
+        let cleaned = svgText
+          .replace(/<\?xml[^?]*\?>/g, '')
+          .replace(/style="enable-background:[^"]*"/g, '')
+          .replace(/enable-background="[^"]*"/g, '')
+          .trim();
+        // Ensure SVG fills its container
+        cleaned = cleaned.replace(/<svg /, '<svg style="width:100%;height:100%;" ');
+        wrap.innerHTML = cleaned;
+      })
+      .catch(() => {
+        wrap.innerHTML = `<img src="${GITHUB_RAW + logo.file}" style="max-width:100%;max-height:100%;object-fit:contain;" />`;
+      });
+  } else {
+    // PNG/JPG — use img tag with filter
+    wrap.innerHTML = `<img src="${GITHUB_RAW + logo.file}" style="max-width:100%;max-height:100%;object-fit:contain;filter:brightness(0) invert(1);" id="logo-img" />`;
+  }
 
   document.getElementById('logo-label').textContent = logo.name;
   document.getElementById('logo-counter').textContent = `Logo ${state.logoIdx + 1} of ${state.logos.length}`;
